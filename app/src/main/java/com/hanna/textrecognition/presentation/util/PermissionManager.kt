@@ -30,6 +30,7 @@ class PermissionManager @Inject constructor(
     ) {
         val newPermissionList = mutableListOf<String>()
         val rationalePermission = mutableListOf<String>()
+
         for (permission in REQUIRED_PERMISSIONS) {
             if (shouldShowPermissionRationale(activity, permission)) {
                 rationalePermission.add(permission)
@@ -50,10 +51,12 @@ class PermissionManager @Inject constructor(
     }
 
     fun showPermissionDialog(activity: Activity) {
-        MaterialAlertDialogBuilder(context)
+        MaterialAlertDialogBuilder(activity)
             .setTitle(context.getString(R.string.title_permission_required))
             .setMessage(context.getString(R.string.caption_permission_required))
-            .setPositiveButton(context.getString(android.R.string.ok)) { _, _ -> }
+            .setPositiveButton(context.getString(android.R.string.ok)) { _, _ ->
+                activity.finish()
+            }
             .setNegativeButton(context.getString(R.string.text_go_to_setting)) { _, _ ->
                 goToSetting(activity)
             }
@@ -86,7 +89,9 @@ class PermissionManager @Inject constructor(
         private val REQUIRED_PERMISSIONS =
             mutableListOf (
                 Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
             ).apply {
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
                     add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
