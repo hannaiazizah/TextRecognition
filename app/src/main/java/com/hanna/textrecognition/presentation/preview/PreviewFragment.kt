@@ -12,12 +12,14 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.google.mlkit.vision.common.InputImage
 import com.hanna.textrecognition.R
 import com.hanna.textrecognition.domain.core.onFailure
 import com.hanna.textrecognition.domain.core.onSuccess
 import com.hanna.textrecognition.databinding.FragmentPreviewBinding
 import com.hanna.textrecognition.domain.core.Failure
+import com.hanna.textrecognition.domain.model.DistanceUiModel
 import com.hanna.textrecognition.presentation.camera.CameraViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -41,6 +43,13 @@ class PreviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         observeFlow()
+        setupButtonListener()
+    }
+
+    private fun setupButtonListener() {
+        binding.btnTryAgain.setOnClickListener{
+            findNavController().navigateUp()
+        }
     }
 
     private fun observeFlow() {
@@ -77,8 +86,13 @@ class PreviewFragment : Fragment() {
                             } else {
                                 setLocationSuccess(location)
                             }
-
                         }
+                    }
+                }
+                launch {
+                    viewModel.distanceResult.collectLatest {
+                        it.onFailure { setDistanceErrorView() }
+                        it.onSuccess { setDistanceSuccessView(it) }
                     }
                 }
             }
@@ -105,9 +119,20 @@ class PreviewFragment : Fragment() {
     }
 
     private fun setLocationSuccess(location: Location) {
-        binding.tvLocationLatitude.text = "Latitude: ${location.latitude}"
+        binding.tvLocationLatitude.text = getString(R.string.label_latitude, location.latitude.toString())
         binding.tvLocationLongitude.isVisible = true
-        binding.tvLocationLongitude.text = "Longitude: ${location.longitude}"
+        binding.tvLocationLongitude.text = getString(R.string.label_longitude, location.longitude.toString())
+    }
+
+    private fun setDistanceErrorView() {
+        binding.tvDistanceValue.text = getString(R.string.label_error_calculate_distance)
+        binding.tvEstimatedTimeValue.isVisible = false
+    }
+
+    private fun setDistanceSuccessView(model: DistanceUiModel) {
+        binding.tvDistanceValue.text = getString(R.string.label_distance, model.distance)
+        binding.tvEstimatedTimeValue.isVisible = true
+        binding.tvEstimatedTimeValue.text = getString(R.string.label_duration, model.estimatedTime)
     }
 
     override fun onDestroyView() {

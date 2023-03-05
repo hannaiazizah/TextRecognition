@@ -24,6 +24,7 @@ android {
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
         buildConfigField "String", "API_KEY", "\"${properties.getProperty('API_KEY')}\""
+        buildConfigField("String", "GOOGLE_API", "\"https://maps.googleapis.com/maps/api/\"")
     }
 
     buildTypes {
@@ -80,6 +81,12 @@ dependencies {
     def hilt_version = "2.44"
     implementation "com.google.dagger:hilt-android:${hilt_version}"
     kapt "com.google.dagger:hilt-android-compiler:${hilt_version}"
+
+    // retrofit
+    def retrofit_version = "2.9.0"
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
+    implementation "com.squareup.okhttp3:logging-interceptor:4.9.3"
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

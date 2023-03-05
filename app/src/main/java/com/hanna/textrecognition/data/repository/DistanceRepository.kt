@@ -1,5 +1,8 @@
 package com.hanna.textrecognition.data.repository
 
+import com.hanna.textrecognition.data.model.DistanceResponse
+import com.hanna.textrecognition.data.model.ResultState
+
 interface DistanceRepository {
-    fun calculateDistance(lat: Double, long: Double)
+    suspend fun calculateDistance(lat: Double, long: Double): ResultState<DistanceResponse>
 }

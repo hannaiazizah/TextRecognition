@@ -26,13 +26,13 @@
             android:id="@+id/ivPreviewImage"
             android:layout_width="match_parent"
             android:layout_height="480dp"
-            android:layout_marginTop="14dp" />
+            android:layout_marginTop="8dp" />
 
         <TextView
             android:id="@+id/tvPreviewTextVisionTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:text="@string/label_text_recognition_result"
             android:textColor="@color/black"
             android:textSize="16sp" />
@@ -41,7 +41,7 @@
             android:id="@+id/tvPreviewTextVisionResult"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="8dp"
             android:textAlignment="textStart"
             android:textColor="@color/black"
             android:textSize="12sp" />
@@ -50,7 +50,7 @@
             android:id="@+id/tvLocationTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:text="@string/label_location_result"
             android:textColor="@color/black"
             android:textSize="16sp" />
@@ -59,7 +59,7 @@
             android:id="@+id/tvLocationLatitude"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="8dp"
             android:textColor="@color/black"
             android:textSize="12sp" />
 
@@ -67,8 +67,41 @@
             android:id="@+id/tvLocationLongitude"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="8dp"
             android:textColor="@color/black"
             android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tvDistanceTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/label_distance_result"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tvDistanceValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/black"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tvEstimatedTimeValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/black"
+            android:textSize="12sp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnTryAgain"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/button_capture_another"
+            android:layout_marginTop="32dp" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 </ScrollView>

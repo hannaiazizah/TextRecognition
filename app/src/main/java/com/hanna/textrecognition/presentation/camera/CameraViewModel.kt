@@ -9,6 +9,9 @@ import com.google.mlkit.vision.text.Text
 import com.hanna.textrecognition.domain.core.Either
 import com.hanna.textrecognition.domain.core.Failure
 import com.hanna.textrecognition.domain.core.FlowUseCase
+import com.hanna.textrecognition.domain.core.onSuccess
+import com.hanna.textrecognition.domain.model.DistanceUiModel
+import com.hanna.textrecognition.domain.usecase.CalculateDistanceUseCase
 import com.hanna.textrecognition.domain.usecase.GetLastLocationUseCase
 import com.hanna.textrecognition.domain.usecase.TextRecognitionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,7 +27,8 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class CameraViewModel @Inject constructor(
     private val textRecognitionUseCase: TextRecognitionUseCase,
-    private val getLastLocationUseCase: GetLastLocationUseCase
+    private val getLastLocationUseCase: GetLastLocationUseCase,
+    private val calculateDistanceUseCase: CalculateDistanceUseCase
 ) : ViewModel() {
 
     private val _imageUri by lazy { MutableStateFlow<Uri?>(null) }
@@ -33,8 +37,15 @@ class CameraViewModel @Inject constructor(
     private val _visionResult by lazy { MutableStateFlow<Either<Failure, Text?>>(Either.success(null)) }
     val visionResult: StateFlow<Either<Failure, Text?>> = _visionResult
 
-    private val _locationResult by lazy { MutableStateFlow<Either<Failure, Location?>>(Either.success(null)) }
+    private val _locationResult by lazy {
+        MutableStateFlow<Either<Failure, Location?>>(Either.success(null))
+    }
     val locationResult: StateFlow<Either<Failure, Location?>> = _locationResult
+
+    private val _distanceResult by lazy {
+        MutableStateFlow<Either<Failure, DistanceUiModel>>(Either.fail(Failure.Empty))
+    }
+    val distanceResult: StateFlow<Either<Failure, DistanceUiModel>> = _distanceResult
 
     private val _isLoading by lazy { MutableSharedFlow<Boolean>() }
     val isLoading: SharedFlow<Boolean> = _isLoading
@@ -53,19 +64,35 @@ class CameraViewModel @Inject constructor(
     fun runTextRecognition(image: InputImage) {
         viewModelScope.launch {
             _isLoading.emit(true)
-            val params = TextRecognitionUseCase.Params(image)
+            val recognitionParams = TextRecognitionUseCase.Params(image)
 
-            val textVisionFlow = textRecognitionUseCase.run(params)
+            val textVisionFlow = textRecognitionUseCase.run(recognitionParams)
             val lastLocationFlow = getLastLocationUseCase.run(FlowUseCase.None())
 
             combine(textVisionFlow, lastLocationFlow) { text, location ->
                 Pair(text, location)
             }.collect {
-                _isLoading.emit(false)
-                _shouldNavigate.emit(true)
                 _visionResult.emit(it.first)
                 _locationResult.emit(it.second)
+                _isLoading.emit(false)
+                it.second.onSuccess { location ->
+                    calculateDistanceMatrix(location)
+                }
             }
+        }
+    }
+
+    private fun calculateDistanceMatrix(location: Location) {
+        viewModelScope.launch {
+            _isLoading.emit(true)
+            val params = CalculateDistanceUseCase.Params(
+                location.latitude,
+                location.longitude
+            )
+            val result = calculateDistanceUseCase.run(params)
+            _shouldNavigate.emit(true)
+            _distanceResult.emit(result)
+            _isLoading.emit(false)
         }
     }
 }
