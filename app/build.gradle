@@ -4,6 +4,7 @@ plugins {
     id 'dagger.hilt.android.plugin'
     id 'kotlin-kapt'
     id 'androidx.navigation.safeargs'
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -56,6 +57,15 @@ dependencies {
     implementation "androidx.camera:camera-video:${camerax_version}"
     implementation "androidx.camera:camera-view:${camerax_version}"
     implementation "androidx.camera:camera-extensions:${camerax_version}"
+
+    // mlkit_text_version
+    def mlkit_text_version = "18.0.2"
+    implementation "com.google.android.gms:play-services-mlkit-text-recognition:${mlkit_text_version}"
+
+    // firebase
+    def firebase_bom_version = "31.2.3"
+    implementation platform("com.google.firebase:firebase-bom:${firebase_bom_version}")
+    implementation 'com.google.firebase:firebase-analytics-ktx'
 
     // dagger-hilt
     def hilt_version = "2.44"

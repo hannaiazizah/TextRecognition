@@ -1,6 +1,7 @@
 package com.hanna.textrecognition.presentation.camera
 
 import android.content.ContentValues
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -10,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
@@ -17,15 +19,22 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import com.google.mlkit.vision.common.InputImage
 import com.hanna.textrecognition.databinding.FragmentCameraBinding
-import com.hanna.textrecognition.presentation.CameraFragmentDirections
 import com.hanna.textrecognition.util.LoadingBar
 import com.hanna.textrecognition.util.PermissionManager
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import javax.inject.Inject
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class CameraFragment : Fragment() {
@@ -36,6 +45,8 @@ class CameraFragment : Fragment() {
     lateinit var permissionManager: PermissionManager
 
     private var imageCapture: ImageCapture? = null
+
+    private lateinit var cameraExecutor: ExecutorService
 
     private val viewModel by activityViewModels<CameraViewModel>()
 
@@ -53,14 +64,32 @@ class CameraFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        cameraExecutor = Executors.newSingleThreadExecutor()
         setupPermissionLauncher()
         setButtonListener()
+        observeFlow()
     }
 
     private fun setButtonListener() {
         binding.btnCapture.setOnClickListener {
-            loading.show()
             takePhoto()
+        }
+    }
+
+    private fun observeFlow() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.isLoading.collectLatest {
+                        if (it) loading.show() else loading.hide()
+                    }
+                }
+                launch {
+                    viewModel.shouldNavigate.collectLatest {
+                        if (it) navigateToPreviewScreen()
+                    }
+                }
+            }
         }
     }
 
@@ -156,15 +185,26 @@ class CameraFragment : Fragment() {
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    viewModel.setImageUri(output.savedUri)
-                    navigateToPreviewScreen()
+                    output.savedUri?.let { uri ->
+                        viewModel.setImageUri(uri)
+                        runTextRecognition(uri)
+                    }
+
                 }
             }
         )
     }
 
+    private fun runTextRecognition(uri: Uri) {
+        try {
+            val image = InputImage.fromFilePath(requireContext(), uri)
+            viewModel.runTextRecognition(image)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     override fun onDestroyView() {
-        loading.hide()
         _binding = null
         super.onDestroyView()
     }

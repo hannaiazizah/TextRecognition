@@ -8,16 +8,16 @@
     <fragment
         android:id="@+id/cameraFragment"
         android:name="com.hanna.textrecognition.presentation.camera.CameraFragment"
-        tools:layout="@layout/fragment_camera" >
+        tools:layout="@layout/fragment_camera">
 
         <action
             android:id="@+id/action_cameraFragment_to_previewFragment"
-            app:destination="@id/previewFragment"/>
+            app:destination="@id/previewFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/previewFragment"
         android:name="com.hanna.textrecognition.presentation.preview.PreviewFragment"
-        tools:layout="@layout/fragment_preview"/>
+        tools:layout="@layout/fragment_preview" />
 
 </navigation>

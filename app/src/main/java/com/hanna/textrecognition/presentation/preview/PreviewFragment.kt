@@ -9,6 +9,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.hanna.textrecognition.R
+import com.hanna.textrecognition.data.core.onFailure
+import com.hanna.textrecognition.data.core.onSuccess
 import com.hanna.textrecognition.databinding.FragmentPreviewBinding
 import com.hanna.textrecognition.presentation.camera.CameraViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,7 +35,6 @@ class PreviewFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         observeFlow()
     }
 
@@ -42,6 +44,18 @@ class PreviewFragment : Fragment() {
                 launch {
                     viewModel.imageUri.collectLatest {
                         it?.let { binding.ivPreviewImage.setImageURI(it) }
+                    }
+                }
+                launch {
+                    viewModel.visionResult.collectLatest {
+                        it.onSuccess { visionText ->
+                            binding.tvPreviewTextResult.text = visionText?.text
+                        }
+                        it.onFailure {
+                            binding.tvPreviewTextResult.text =
+                                getString(R.string.label_failed_text_recognition)
+                        }
+
                     }
                 }
             }

@@ -5,4 +5,5 @@
     <string name="caption_permission_required">Some permissions are needed to be allowed to use this app without any problems.</string>
     <string name="label_capture">CAPTURE</string>
     <string name="label_image_preview">Image Preview</string>
+    <string name="label_failed_text_recognition">Failed to recognise text on the image</string>
 </resources>
