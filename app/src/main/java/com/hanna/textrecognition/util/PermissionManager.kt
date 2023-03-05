@@ -1,4 +1,4 @@
-package com.hanna.textrecognition.presentation.util
+package com.hanna.textrecognition.util
 
 import android.Manifest
 import android.app.Activity

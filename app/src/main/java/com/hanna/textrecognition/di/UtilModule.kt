@@ -1,7 +1,7 @@
 package com.hanna.textrecognition.di
 
 import android.content.Context
-import com.hanna.textrecognition.presentation.util.PermissionManager
+import com.hanna.textrecognition.util.PermissionManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

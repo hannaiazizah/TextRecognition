@@ -1,4 +1,4 @@
-package com.hanna.textrecognition.presentation
+package com.hanna.textrecognition.presentation.preview
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -9,9 +9,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.hanna.textrecognition.R
-import com.hanna.textrecognition.databinding.FragmentCameraBinding
 import com.hanna.textrecognition.databinding.FragmentPreviewBinding
+import com.hanna.textrecognition.presentation.camera.CameraViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch

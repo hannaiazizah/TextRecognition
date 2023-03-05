@@ -1,4 +1,4 @@
-package com.hanna.textrecognition.presentation
+package com.hanna.textrecognition.presentation.camera
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel

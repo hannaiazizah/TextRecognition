@@ -1,4 +1,4 @@
-package com.hanna.textrecognition.presentation
+package com.hanna.textrecognition.presentation.camera
 
 import android.content.ContentValues
 import android.os.Build
@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -20,7 +19,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.hanna.textrecognition.databinding.FragmentCameraBinding
-import com.hanna.textrecognition.presentation.util.PermissionManager
+import com.hanna.textrecognition.presentation.CameraFragmentDirections
+import com.hanna.textrecognition.util.LoadingBar
+import com.hanna.textrecognition.util.PermissionManager
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.*
@@ -37,6 +38,8 @@ class CameraFragment : Fragment() {
     private var imageCapture: ImageCapture? = null
 
     private val viewModel by activityViewModels<CameraViewModel>()
+
+    private val loading by lazy { LoadingBar(requireContext()) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,6 +59,7 @@ class CameraFragment : Fragment() {
 
     private fun setButtonListener() {
         binding.btnCapture.setOnClickListener {
+            loading.show()
             takePhoto()
         }
     }
@@ -160,8 +164,9 @@ class CameraFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        loading.hide()
         _binding = null
+        super.onDestroyView()
     }
 
     companion object {
