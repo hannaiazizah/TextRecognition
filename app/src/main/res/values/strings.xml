@@ -3,4 +3,6 @@
     <string name="text_go_to_setting">Go to setting</string>
     <string name="title_permission_required">Permission Required</string>
     <string name="caption_permission_required">Some permissions are needed to be allowed to use this app without any problems.</string>
+    <string name="label_capture">CAPTURE</string>
+    <string name="label_image_preview">Image Preview</string>
 </resources>
