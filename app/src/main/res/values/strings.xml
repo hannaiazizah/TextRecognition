@@ -6,4 +6,9 @@
     <string name="label_capture">CAPTURE</string>
     <string name="label_image_preview">Image Preview</string>
     <string name="label_failed_text_recognition">Failed to recognise text on the image</string>
+    <string name="label_text_recognition_result">Text Recognition Result</string>
+    <string name="label_location_result">Location Result</string>
+    <string name="label_error_get_location">Failed to get location</string>
+    <string name="label_error_location_permission_is_required">Location permission is required.</string>
+    <string name="label_error_location_not_found">Location not found.</string>
 </resources>

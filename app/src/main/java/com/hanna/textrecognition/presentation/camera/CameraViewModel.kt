@@ -1,34 +1,40 @@
 package com.hanna.textrecognition.presentation.camera
 
+import android.location.Location
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import com.hanna.textrecognition.data.core.Either
-import com.hanna.textrecognition.data.core.Failure
+import com.hanna.textrecognition.domain.core.Either
+import com.hanna.textrecognition.domain.core.Failure
+import com.hanna.textrecognition.domain.core.FlowUseCase
+import com.hanna.textrecognition.domain.usecase.GetLastLocationUseCase
+import com.hanna.textrecognition.domain.usecase.TextRecognitionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 
 @HiltViewModel
-class CameraViewModel @Inject constructor() : ViewModel() {
+class CameraViewModel @Inject constructor(
+    private val textRecognitionUseCase: TextRecognitionUseCase,
+    private val getLastLocationUseCase: GetLastLocationUseCase
+) : ViewModel() {
 
     private val _imageUri by lazy { MutableStateFlow<Uri?>(null) }
     val imageUri: StateFlow<Uri?> = _imageUri
 
     private val _visionResult by lazy { MutableStateFlow<Either<Failure, Text?>>(Either.success(null)) }
     val visionResult: StateFlow<Either<Failure, Text?>> = _visionResult
+
+    private val _locationResult by lazy { MutableStateFlow<Either<Failure, Location?>>(Either.success(null)) }
+    val locationResult: StateFlow<Either<Failure, Location?>> = _locationResult
 
     private val _isLoading by lazy { MutableSharedFlow<Boolean>() }
     val isLoading: SharedFlow<Boolean> = _isLoading
@@ -47,21 +53,18 @@ class CameraViewModel @Inject constructor() : ViewModel() {
     fun runTextRecognition(image: InputImage) {
         viewModelScope.launch {
             _isLoading.emit(true)
-            callbackFlow<Either<Failure, Text>> {
-                val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-                recognizer.process(image)
-                    .addOnSuccessListener { texts ->
-                        trySend(Either.success(texts))
-                    }
-                    .addOnFailureListener { e -> // Task failed with an exception
-                        trySend(Either.fail(Failure.RecognitionFailure))
-                    }
+            val params = TextRecognitionUseCase.Params(image)
 
-                awaitClose { recognizer.close() }
-            }.collectLatest {
+            val textVisionFlow = textRecognitionUseCase.run(params)
+            val lastLocationFlow = getLastLocationUseCase.run(FlowUseCase.None())
+
+            combine(textVisionFlow, lastLocationFlow) { text, location ->
+                Pair(text, location)
+            }.collect {
                 _isLoading.emit(false)
-                _visionResult.emit(it)
                 _shouldNavigate.emit(true)
+                _visionResult.emit(it.first)
+                _locationResult.emit(it.second)
             }
         }
     }

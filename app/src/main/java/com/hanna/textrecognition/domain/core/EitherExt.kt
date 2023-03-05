@@ -1,4 +1,4 @@
-package com.hanna.textrecognition.data.core
+package com.hanna.textrecognition.domain.core
 
 suspend fun <E, S, S2> Either<E, S>.carryOn(
     nextBlock: suspend (S) -> Either<E, S2>

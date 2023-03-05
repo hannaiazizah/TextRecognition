@@ -1,4 +1,4 @@
-package com.hanna.textrecognition.data.core
+package com.hanna.textrecognition.domain.core
 
 /**
  * Base Class for handling errors/failures/exceptions.
@@ -8,6 +8,8 @@ sealed class Failure {
     object NetworkConnection : Failure()
     object UnknownError: Failure()
     object RecognitionFailure: Failure()
+    object PermissionFailure: Failure()
+    object LocationFailure: Failure()
     class ServerError(val exception: Exception) : Failure()
 
     /** * Extend this class for feature specific failures.*/

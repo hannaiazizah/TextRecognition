@@ -9,9 +9,10 @@
     android:padding="24dp"
     tools:context=".presentation.preview.PreviewFragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/tvPreviewTitle"
@@ -19,33 +20,55 @@
             android:layout_height="wrap_content"
             android:text="@string/label_image_preview"
             android:textColor="@color/black"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:textSize="16sp" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/ivPreviewImage"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="24dp"
-            app:layout_constraintBottom_toTopOf="@id/tvPreviewTextResult"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvPreviewTitle" />
+            android:layout_width="match_parent"
+            android:layout_height="480dp"
+            android:layout_marginTop="14dp" />
 
         <TextView
-            android:id="@+id/tvPreviewTextResult"
-            android:layout_width="0dp"
+            android:id="@+id/tvPreviewTextVisionTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
+            android:text="@string/label_text_recognition_result"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tvPreviewTextVisionResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
             android:textAlignment="textStart"
             android:textColor="@color/black"
-            android:textSize="12sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivPreviewImage" />
+            android:textSize="12sp" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/tvLocationTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/label_location_result"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tvLocationLatitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:textColor="@color/black"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tvLocationLongitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:textColor="@color/black"
+            android:textSize="12sp" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
 </ScrollView>

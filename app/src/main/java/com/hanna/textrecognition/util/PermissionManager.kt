@@ -78,7 +78,7 @@ class PermissionManager @Inject constructor(
         return shouldShowRequestPermissionRationale(activity, permission)
     }
 
-    private fun hasPermission(permission: String): Boolean {
+    fun hasPermission(permission: String): Boolean {
         return ContextCompat.checkSelfPermission(
             context,
             permission

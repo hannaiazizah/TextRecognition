@@ -1,4 +1,4 @@
-package com.hanna.textrecognition.data.core
+package com.hanna.textrecognition.domain.core
 
 /**
 * https://dev.to/erdo/intro-to-eithers-in-android-2om9

@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -72,6 +73,7 @@ class CameraFragment : Fragment() {
 
     private fun setButtonListener() {
         binding.btnCapture.setOnClickListener {
+            binding.btnCapture.isEnabled = false
             takePhoto()
         }
     }
@@ -86,7 +88,9 @@ class CameraFragment : Fragment() {
                 }
                 launch {
                     viewModel.shouldNavigate.collectLatest {
-                        if (it) navigateToPreviewScreen()
+                        if (it) {
+                            navigateToPreviewScreen()
+                        }
                     }
                 }
             }
@@ -151,6 +155,7 @@ class CameraFragment : Fragment() {
     }
 
     private fun takePhoto() {
+        loading.show()
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
@@ -181,10 +186,17 @@ class CameraFragment : Fragment() {
             ContextCompat.getMainExecutor(requireContext()),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
-                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+                    loading.hide()
+                    binding.btnCapture.isEnabled = true
+                    Toast.makeText(
+                        requireContext(),
+                        "Photo capture failed",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    loading.hide()
                     output.savedUri?.let { uri ->
                         viewModel.setImageUri(uri)
                         runTextRecognition(uri)
