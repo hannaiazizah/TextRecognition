@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
@@ -26,6 +25,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.mlkit.vision.common.InputImage
 import com.hanna.textrecognition.databinding.FragmentCameraBinding
+import com.hanna.textrecognition.domain.core.onFailure
+import com.hanna.textrecognition.domain.core.onSuccess
 import com.hanna.textrecognition.util.LoadingBar
 import com.hanna.textrecognition.util.PermissionManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -88,13 +89,23 @@ class CameraFragment : Fragment() {
                 }
                 launch {
                     viewModel.shouldNavigate.collectLatest {
-                        if (it) {
-                            navigateToPreviewScreen()
+                        it.onSuccess { success ->
+                            if (success) navigateToPreviewScreen()
                         }
+                        it.onFailure { showErrorToast() }
                     }
                 }
             }
         }
+    }
+
+    private fun showErrorToast() {
+        binding.btnCapture.isEnabled = true
+        Toast.makeText(
+            requireContext(),
+            "Some error happened. Please try again.",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     private fun navigateToPreviewScreen() {
@@ -210,7 +221,7 @@ class CameraFragment : Fragment() {
     private fun runTextRecognition(uri: Uri) {
         try {
             val image = InputImage.fromFilePath(requireContext(), uri)
-            viewModel.runTextRecognition(image)
+            viewModel.fetchImageAttributes(image)
         } catch (e: Exception) {
             e.printStackTrace()
         }

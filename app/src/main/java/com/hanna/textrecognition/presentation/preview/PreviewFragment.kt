@@ -48,6 +48,7 @@ class PreviewFragment : Fragment() {
 
     private fun setupButtonListener() {
         binding.btnTryAgain.setOnClickListener{
+            viewModel.clearData()
             findNavController().navigateUp()
         }
     }
@@ -102,7 +103,7 @@ class PreviewFragment : Fragment() {
     private fun runTextRecognition(uri: Uri) {
         try {
             val image = InputImage.fromFilePath(requireContext(), uri)
-            viewModel.runTextRecognition(image)
+            viewModel.fetchImageAttributes(image)
         } catch (e: Exception) {
             e.printStackTrace()
         }

@@ -5,6 +5,9 @@ import com.hanna.textrecognition.data.core.AppDispatchers
 import com.hanna.textrecognition.data.core.AppDispatchersImpl
 import com.hanna.textrecognition.data.repository.DistanceRepository
 import com.hanna.textrecognition.data.repository.DistanceRepositoryImpl
+import com.hanna.textrecognition.data.repository.FirebaseRepository
+import com.hanna.textrecognition.data.repository.FirebaseRepositoryImpl
+import com.hanna.textrecognition.data.service.FirebaseHelper
 import com.hanna.textrecognition.data.service.GoogleService
 import dagger.Module
 import dagger.Provides
@@ -59,5 +62,19 @@ object DataModule {
         googleService: GoogleService
     ): DistanceRepository {
         return DistanceRepositoryImpl(googleService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseHelper(): FirebaseHelper {
+        return FirebaseHelper()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseRepository(
+        firebaseHelper: FirebaseHelper
+    ): FirebaseRepository {
+        return FirebaseRepositoryImpl(firebaseHelper)
     }
 }

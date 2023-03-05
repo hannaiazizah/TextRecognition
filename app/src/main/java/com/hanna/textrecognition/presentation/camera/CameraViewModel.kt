@@ -13,6 +13,7 @@ import com.hanna.textrecognition.domain.core.onSuccess
 import com.hanna.textrecognition.domain.model.DistanceUiModel
 import com.hanna.textrecognition.domain.usecase.CalculateDistanceUseCase
 import com.hanna.textrecognition.domain.usecase.GetLastLocationUseCase
+import com.hanna.textrecognition.domain.usecase.PostDataUseCase
 import com.hanna.textrecognition.domain.usecase.TextRecognitionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -28,7 +29,8 @@ import kotlinx.coroutines.launch
 class CameraViewModel @Inject constructor(
     private val textRecognitionUseCase: TextRecognitionUseCase,
     private val getLastLocationUseCase: GetLastLocationUseCase,
-    private val calculateDistanceUseCase: CalculateDistanceUseCase
+    private val calculateDistanceUseCase: CalculateDistanceUseCase,
+    private val postDataUseCase: PostDataUseCase
 ) : ViewModel() {
 
     private val _imageUri by lazy { MutableStateFlow<Uri?>(null) }
@@ -50,18 +52,28 @@ class CameraViewModel @Inject constructor(
     private val _isLoading by lazy { MutableSharedFlow<Boolean>() }
     val isLoading: SharedFlow<Boolean> = _isLoading
 
-    private val _shouldNavigate by lazy { MutableSharedFlow<Boolean>() }
-    val shouldNavigate: SharedFlow<Boolean> = _shouldNavigate
+    private val _shouldNavigate by lazy { MutableSharedFlow<Either<Failure, Boolean>>() }
+    val shouldNavigate: SharedFlow<Either<Failure, Boolean>> = _shouldNavigate
+
+    private var dataUri: Uri? = null
+    private var dataText: Text? = null
+    private var dataLocation: Location? = null
+    private var dataDistance: DistanceUiModel? = null
 
     fun setImageUri(uri: Uri?) {
         viewModelScope.launch {
+            dataUri = uri
             _isLoading.emit(true)
             _imageUri.emit(uri)
             _isLoading.emit(false)
         }
     }
 
-    fun runTextRecognition(image: InputImage) {
+    // run text recognition
+    // request current location
+    // calculate distance and duration
+    // submit data
+    fun fetchImageAttributes(image: InputImage) {
         viewModelScope.launch {
             _isLoading.emit(true)
             val recognitionParams = TextRecognitionUseCase.Params(image)
@@ -76,7 +88,11 @@ class CameraViewModel @Inject constructor(
                 _locationResult.emit(it.second)
                 _isLoading.emit(false)
                 it.second.onSuccess { location ->
+                    dataLocation = location
                     calculateDistanceMatrix(location)
+                }
+                it.first.onSuccess { text ->
+                    dataText = text
                 }
             }
         }
@@ -90,9 +106,40 @@ class CameraViewModel @Inject constructor(
                 location.longitude
             )
             val result = calculateDistanceUseCase.run(params)
-            _shouldNavigate.emit(true)
+            result.onSuccess {
+                dataDistance = it
+            }
             _distanceResult.emit(result)
             _isLoading.emit(false)
+            submitData()
+        }
+    }
+
+    private fun submitData() {
+        viewModelScope.launch {
+            _isLoading.emit(true)
+            val params = PostDataUseCase.Params(
+                imageUri = dataUri,
+                imageText = dataText,
+                latitude = dataLocation?.latitude,
+                longitude = dataLocation?.longitude,
+                distance = dataDistance?.distance,
+                duration = dataDistance?.estimatedTime
+            )
+
+            val result = postDataUseCase.run(params)
+            _shouldNavigate.emit(result)
+            _isLoading.emit(false)
+        }
+    }
+
+    fun clearData() {
+        viewModelScope.launch {
+            dataDistance = null
+            dataUri = null
+            dataText = null
+            dataLocation = null
+            _shouldNavigate.emit(Either.success(false))
         }
     }
 }

@@ -5,7 +5,7 @@ package com.hanna.textrecognition.domain.core
  * Every feature specific failure should extend [FeatureFailure] class.
  */
 sealed class Failure {
-    object NetworkConnection : Failure()
+    object DataFormatError : Failure()
     object UnknownError: Failure()
     object RecognitionFailure: Failure()
     object PermissionFailure: Failure()

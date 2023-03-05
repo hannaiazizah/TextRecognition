@@ -10,7 +10,7 @@ class DistanceRepositoryImpl(
 ): DistanceRepository {
     override suspend fun calculateDistance(lat: Double, long: Double): ResultState<DistanceResponse> {
         val apiKey = BuildConfig.API_KEY
-        val destination = "-6.1938544,106.8197775"
+        val destination = "-6.1938544,106.8197775" // Plaza Indonesia
         val origin = "$lat,$long"
         val result = googleService.getDistanceMatrix(origin, destination, apiKey)
         return if (result.isSuccessful && result.body() != null) {
