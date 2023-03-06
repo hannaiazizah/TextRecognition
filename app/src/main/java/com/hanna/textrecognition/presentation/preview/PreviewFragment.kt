@@ -67,12 +67,13 @@ class PreviewFragment : Fragment() {
                 launch {
                     viewModel.visionResult.collectLatest {
                         it.onSuccess { visionText ->
-                            binding.tvPreviewTextVisionResult.text = visionText?.text
+                            binding.tvPreviewTextVisionResult.setText(visionText?.text)
 
                         }
                         it.onFailure {
-                            binding.tvPreviewTextVisionResult.text =
+                            binding.tvPreviewTextVisionResult.setText(
                                 getString(R.string.label_failed_text_recognition)
+                            )
                         }
                     }
                 }
