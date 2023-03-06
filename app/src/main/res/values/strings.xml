@@ -11,11 +11,12 @@
     <string name="label_error_get_location">Failed to get location</string>
     <string name="label_error_location_permission_is_required">Location permission is required.</string>
     <string name="label_error_location_not_found">Location not found.</string>
-    <string name="label_distance_result">Distance Result</string>
+    <string name="label_distance_result">Distance Result (in m)</string>
     <string name="label_error_calculate_distance">Failed to calculate distance.</string>
     <string name="label_distance">Distance: %s</string>
     <string name="label_duration">Estimated Time: %s</string>
     <string name="label_latitude">Latitude: %s</string>
     <string name="label_longitude">Longitude: %s</string>
     <string name="button_capture_another">Capture Another Image</string>
+    <string name="label_estimated_time">Estimated Time (in mins)</string>
 </resources>

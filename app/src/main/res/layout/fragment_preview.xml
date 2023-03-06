@@ -37,11 +37,12 @@
             android:textColor="@color/black"
             android:textSize="16sp" />
 
-        <TextView
+        <EditText
             android:id="@+id/tvPreviewTextVisionResult"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:inputType="textMultiLine"
             android:textAlignment="textStart"
             android:textColor="@color/black"
             android:textSize="12sp" />
@@ -55,19 +56,21 @@
             android:textColor="@color/black"
             android:textSize="16sp" />
 
-        <TextView
+        <EditText
             android:id="@+id/tvLocationLatitude"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:inputType="numberDecimal"
             android:textColor="@color/black"
             android:textSize="12sp" />
 
-        <TextView
+        <EditText
             android:id="@+id/tvLocationLongitude"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:inputType="numberDecimal"
             android:textColor="@color/black"
             android:textSize="12sp" />
 
@@ -80,19 +83,30 @@
             android:textColor="@color/black"
             android:textSize="16sp" />
 
-        <TextView
+        <EditText
             android:id="@+id/tvDistanceValue"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:inputType="numberDecimal"
             android:textColor="@color/black"
             android:textSize="12sp" />
 
         <TextView
-            android:id="@+id/tvEstimatedTimeValue"
+            android:id="@+id/tvEstimatedTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/label_estimated_time"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/tvEstimatedTimeValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:inputType="numberDecimal"
             android:textColor="@color/black"
             android:textSize="12sp" />
 
@@ -101,7 +115,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/button_capture_another"
-            android:layout_marginTop="32dp" />
+            android:layout_marginTop="32dp"
+            android:text="@string/button_capture_another" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 </ScrollView>

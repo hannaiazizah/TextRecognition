@@ -10,8 +10,8 @@ data class DistanceUiModel(
         fun toDistanceUiModel(response: DistanceResponse): DistanceUiModel? {
             return response.rows?.first()?.elements?.first()?.let {
                 DistanceUiModel(
-                    distance = it.distance?.text ?: "0km",
-                    estimatedTime = it.duration?.text ?: "0min"
+                    distance = it.distance?.value?.toString() ?: "0",
+                    estimatedTime = it.duration?.value?.toString() ?: "0"
                 )
             }
         }

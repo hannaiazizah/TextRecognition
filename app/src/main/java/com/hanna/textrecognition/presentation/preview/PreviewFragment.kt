@@ -110,30 +110,23 @@ class PreviewFragment : Fragment() {
     }
 
     private fun setLocationError(failure: Failure? = null) {
-        val errorMessage = when(failure) {
-            is Failure.PermissionFailure -> getString(R.string.label_error_location_permission_is_required)
-            is Failure.LocationFailure -> getString(R.string.label_error_get_location)
-            else -> getString(R.string.label_error_location_not_found)
-        }
-        binding.tvLocationLatitude.text = errorMessage
-        binding.tvLocationLongitude.isVisible = false
+        binding.tvLocationLatitude.setText("0")
+        binding.tvLocationLongitude.setText("0")
     }
 
     private fun setLocationSuccess(location: Location) {
-        binding.tvLocationLatitude.text = getString(R.string.label_latitude, location.latitude.toString())
-        binding.tvLocationLongitude.isVisible = true
-        binding.tvLocationLongitude.text = getString(R.string.label_longitude, location.longitude.toString())
+        binding.tvLocationLatitude.setText(location.latitude.toString())
+        binding.tvLocationLongitude.setText(location.longitude.toString())
     }
 
     private fun setDistanceErrorView() {
-        binding.tvDistanceValue.text = getString(R.string.label_error_calculate_distance)
-        binding.tvEstimatedTimeValue.isVisible = false
+        binding.tvDistanceValue.setText("0")
+        binding.tvEstimatedTimeValue.setText("0")
     }
 
     private fun setDistanceSuccessView(model: DistanceUiModel) {
-        binding.tvDistanceValue.text = getString(R.string.label_distance, model.distance)
-        binding.tvEstimatedTimeValue.isVisible = true
-        binding.tvEstimatedTimeValue.text = getString(R.string.label_duration, model.estimatedTime)
+        binding.tvDistanceValue.setText(model.distance)
+        binding.tvEstimatedTimeValue.setText(model.estimatedTime)
     }
 
     override fun onDestroyView() {
