@@ -15,4 +15,6 @@
     <string name="label_error_calculate_distance">Failed to calculate distance.</string>
     <string name="button_capture_another">Capture Another Image</string>
     <string name="label_estimated_time">Estimated Time (in mins)</string>
+    <string name="label_text_recognition_content_desc">Text Recognition Result</string>
+    <string name="label_update_data">Update Data</string>
 </resources>

@@ -8,13 +8,13 @@ import kotlinx.coroutines.launch
 
 abstract class FlowUseCase<out Type, in Params> where Type : Any {
 
-    abstract suspend fun run(params: Params): Flow<Either<Failure, Type>>
+    abstract suspend fun run(params: Params): Flow<Type?>
 
     operator fun invoke(
         params: Params,
         scope: CoroutineScope,
         appDispatchers: AppDispatchers,
-        onResult: (Flow<Either<Failure, Type>>) -> Unit = {}
+        onResult: (Flow<Type?>) -> Unit = {}
     ) {
         scope.launch {
             val deferred = async(appDispatchers.io) {

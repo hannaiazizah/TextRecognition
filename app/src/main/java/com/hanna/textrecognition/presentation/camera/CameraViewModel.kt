@@ -11,10 +11,13 @@ import com.hanna.textrecognition.domain.core.Failure
 import com.hanna.textrecognition.domain.core.FlowUseCase
 import com.hanna.textrecognition.domain.core.onSuccess
 import com.hanna.textrecognition.domain.model.DistanceUiModel
+import com.hanna.textrecognition.domain.model.ImageAttributesUiModel
+import com.hanna.textrecognition.domain.model.UploadDataResultUiModel
 import com.hanna.textrecognition.domain.usecase.CalculateDistanceUseCase
 import com.hanna.textrecognition.domain.usecase.GetLastLocationUseCase
-import com.hanna.textrecognition.domain.usecase.PostDataUseCase
+import com.hanna.textrecognition.domain.usecase.SubmitDataUseCase
 import com.hanna.textrecognition.domain.usecase.TextRecognitionUseCase
+import com.hanna.textrecognition.domain.usecase.UpdateDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -30,39 +33,44 @@ class CameraViewModel @Inject constructor(
     private val textRecognitionUseCase: TextRecognitionUseCase,
     private val getLastLocationUseCase: GetLastLocationUseCase,
     private val calculateDistanceUseCase: CalculateDistanceUseCase,
-    private val postDataUseCase: PostDataUseCase
+    private val submitDataUseCase: SubmitDataUseCase,
+    private val updateDataUseCase: UpdateDataUseCase
 ) : ViewModel() {
 
     private val _imageUri by lazy { MutableStateFlow<Uri?>(null) }
     val imageUri: StateFlow<Uri?> = _imageUri
 
-    private val _visionResult by lazy { MutableStateFlow<Either<Failure, Text?>>(Either.success(null)) }
-    val visionResult: StateFlow<Either<Failure, Text?>> = _visionResult
+    private val _visionResult by lazy { MutableStateFlow<Text?>(null) }
+    val visionResult: StateFlow<Text?> = _visionResult
 
-    private val _locationResult by lazy {
-        MutableStateFlow<Either<Failure, Location?>>(Either.success(null))
-    }
-    val locationResult: StateFlow<Either<Failure, Location?>> = _locationResult
+    private val _locationResult by lazy { MutableStateFlow<Location?>(null) }
+    val locationResult: StateFlow<Location?> = _locationResult
 
     private val _distanceResult by lazy {
-        MutableStateFlow<Either<Failure, DistanceUiModel>>(Either.fail(Failure.Empty))
+        MutableStateFlow<Either<Failure, DistanceUiModel>>(
+            Either.fail(Failure.Empty)
+        )
     }
     val distanceResult: StateFlow<Either<Failure, DistanceUiModel>> = _distanceResult
 
     private val _isLoading by lazy { MutableSharedFlow<Boolean>() }
     val isLoading: SharedFlow<Boolean> = _isLoading
 
-    private val _shouldNavigate by lazy { MutableSharedFlow<Either<Failure, Boolean>>() }
-    val shouldNavigate: SharedFlow<Either<Failure, Boolean>> = _shouldNavigate
+    private val _uploadResult by lazy {
+        MutableStateFlow<Either<Failure, UploadDataResultUiModel>>(
+            Either.fail(Failure.Empty)
+        )
+    }
+    val uploadResult: StateFlow<Either<Failure, UploadDataResultUiModel>> = _uploadResult
 
-    private var dataUri: Uri? = null
-    private var dataText: Text? = null
-    private var dataLocation: Location? = null
+    private val _updateResult by lazy { MutableSharedFlow<Either<Failure, Boolean>>() }
+    val updateResult: SharedFlow<Either<Failure, Boolean>> = _updateResult
+
     private var dataDistance: DistanceUiModel? = null
+    private var imageAttributesUiModel: ImageAttributesUiModel? = null
 
     fun setImageUri(uri: Uri?) {
         viewModelScope.launch {
-            dataUri = uri
             _isLoading.emit(true)
             _imageUri.emit(uri)
             _isLoading.emit(false)
@@ -87,12 +95,9 @@ class CameraViewModel @Inject constructor(
                 _visionResult.emit(it.first)
                 _locationResult.emit(it.second)
                 _isLoading.emit(false)
-                it.second.onSuccess { location ->
-                    dataLocation = location
+
+                it.second?.let { location ->
                     calculateDistanceMatrix(location)
-                }
-                it.first.onSuccess { text ->
-                    dataText = text
                 }
             }
         }
@@ -118,17 +123,17 @@ class CameraViewModel @Inject constructor(
     private fun submitData() {
         viewModelScope.launch {
             _isLoading.emit(true)
-            val params = PostDataUseCase.Params(
-                imageUri = dataUri,
-                imageText = dataText,
-                latitude = dataLocation?.latitude,
-                longitude = dataLocation?.longitude,
+            val params = SubmitDataUseCase.Params(
+                imageUri = imageUri.value,
+                imageText = visionResult.value,
+                latitude = locationResult.value?.latitude,
+                longitude = locationResult.value?.longitude,
                 distance = dataDistance?.distance,
                 duration = dataDistance?.estimatedTime
             )
 
-            val result = postDataUseCase.run(params)
-            _shouldNavigate.emit(result)
+            val result = submitDataUseCase.run(params)
+            _uploadResult.emit(result)
             _isLoading.emit(false)
         }
     }
@@ -136,10 +141,32 @@ class CameraViewModel @Inject constructor(
     fun clearData() {
         viewModelScope.launch {
             dataDistance = null
-            dataUri = null
-            dataText = null
-            dataLocation = null
-            _shouldNavigate.emit(Either.success(false))
+            _visionResult.emit(null)
+            _locationResult.emit(null)
+            _uploadResult.emit(Either.fail(Failure.Empty))
+            imageAttributesUiModel = null
+        }
+    }
+
+    fun updateData(attributesModel: ImageAttributesUiModel) {
+        imageAttributesUiModel = attributesModel
+    }
+
+    fun postUpdateData() {
+        imageAttributesUiModel ?: return
+        viewModelScope.launch {
+            val dataPath =
+                (uploadResult.value as? Either.Success)?.value?.referenceId ?: return@launch
+            val params = UpdateDataUseCase.Params(
+                dataPath = dataPath,
+                imageText = imageAttributesUiModel!!.text,
+                latitude = imageAttributesUiModel!!.lat,
+                longitude = imageAttributesUiModel!!.long,
+                distance = imageAttributesUiModel!!.distance,
+                duration = imageAttributesUiModel!!.time
+            )
+            val result = updateDataUseCase.run(params)
+            _updateResult.emit(result)
         }
     }
 }

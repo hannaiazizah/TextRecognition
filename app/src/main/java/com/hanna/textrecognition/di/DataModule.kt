@@ -1,5 +1,6 @@
 package com.hanna.textrecognition.di
 
+import android.content.Context
 import com.hanna.textrecognition.BuildConfig
 import com.hanna.textrecognition.data.core.AppDispatchers
 import com.hanna.textrecognition.data.core.AppDispatchersImpl
@@ -12,9 +13,11 @@ import com.hanna.textrecognition.data.service.GoogleService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -31,13 +34,17 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
+        val cacheDir = context.cacheDir
+        val cacheSize = 10L * 1024L * 1024L // 10 MiB
+
         val okHttpClientBuilder = OkHttpClient.Builder()
         okHttpClientBuilder
+            .cache(Cache(cacheDir, cacheSize))
             .addInterceptor(loggingInterceptor)
             .readTimeout(120, TimeUnit.SECONDS)
             .connectTimeout(120, TimeUnit.SECONDS)

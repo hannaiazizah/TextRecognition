@@ -88,9 +88,9 @@ class CameraFragment : Fragment() {
                     }
                 }
                 launch {
-                    viewModel.shouldNavigate.collectLatest {
-                        it.onSuccess { success ->
-                            if (success) navigateToPreviewScreen()
+                    viewModel.uploadResult.collectLatest {
+                        it.onSuccess {
+                            navigateToPreviewScreen()
                         }
                         it.onFailure { showErrorToast() }
                     }

@@ -1,28 +1,34 @@
 package com.hanna.textrecognition.presentation.preview
 
 import android.location.Location
-import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
+import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import com.google.mlkit.vision.common.InputImage
 import com.hanna.textrecognition.R
-import com.hanna.textrecognition.domain.core.onFailure
-import com.hanna.textrecognition.domain.core.onSuccess
 import com.hanna.textrecognition.databinding.FragmentPreviewBinding
 import com.hanna.textrecognition.domain.core.Failure
+import com.hanna.textrecognition.domain.core.onFailure
+import com.hanna.textrecognition.domain.core.onSuccess
 import com.hanna.textrecognition.domain.model.DistanceUiModel
+import com.hanna.textrecognition.domain.model.ImageAttributesUiModel
 import com.hanna.textrecognition.presentation.camera.CameraViewModel
+import com.hanna.textrecognition.util.asFlow
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -40,6 +46,8 @@ class PreviewFragment : Fragment() {
         return binding.root
     }
 
+    @ExperimentalCoroutinesApi
+    @FlowPreview
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         observeFlow()
@@ -51,8 +59,13 @@ class PreviewFragment : Fragment() {
             viewModel.clearData()
             findNavController().navigateUp()
         }
+        binding.btnTryAgain.setOnClickListener {
+            viewModel.postUpdateData()
+        }
     }
 
+    @ExperimentalCoroutinesApi
+    @FlowPreview
     private fun observeFlow() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -60,17 +73,14 @@ class PreviewFragment : Fragment() {
                     viewModel.imageUri.collectLatest {
                         it?.let {
                             binding.ivPreviewImage.setImageURI(it)
-                            runTextRecognition(it)
                         }
                     }
                 }
                 launch {
                     viewModel.visionResult.collectLatest {
-                        it.onSuccess { visionText ->
-                            binding.tvPreviewTextVisionResult.setText(visionText?.text)
-
-                        }
-                        it.onFailure {
+                        if (it != null) {
+                            binding.tvPreviewTextVisionResult.setText(it.text)
+                        } else {
                             binding.tvPreviewTextVisionResult.setText(
                                 getString(R.string.label_failed_text_recognition)
                             )
@@ -78,35 +88,87 @@ class PreviewFragment : Fragment() {
                     }
                 }
                 launch {
-                    viewModel.locationResult.collectLatest {
-                        it.onFailure {
-                            setLocationError(it)
-                        }
-                        it.onSuccess { location ->
-                            if (location == null) {
-                                setLocationError()
-                            } else {
-                                setLocationSuccess(location)
-                            }
+                    viewModel.locationResult.collectLatest { location ->
+                        if (location == null) {
+                            setLocationError()
+                        } else {
+                            setLocationSuccess(location)
                         }
                     }
                 }
                 launch {
                     viewModel.distanceResult.collectLatest {
                         it.onFailure { setDistanceErrorView() }
-                        it.onSuccess { setDistanceSuccessView(it) }
+                        it.onSuccess { result ->
+                            setDistanceSuccessView(result)
+                        }
                     }
+                }
+                launch {
+                    viewModel.updateResult.collectLatest {
+                        it.onSuccess {
+                            Toast.makeText(requireContext(), "Update data success!", Toast.LENGTH_SHORT).show()
+                        }.onFailure {
+                            Toast.makeText(requireContext(), "Update data failed!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                launch {
+                    observeTextField()
                 }
             }
         }
     }
 
-    private fun runTextRecognition(uri: Uri) {
-        try {
-            val image = InputImage.fromFilePath(requireContext(), uri)
-            viewModel.fetchImageAttributes(image)
-        } catch (e: Exception) {
-            e.printStackTrace()
+    @ExperimentalCoroutinesApi
+    @FlowPreview
+    private suspend fun observeTextField() = with(binding) {
+        val textFlow = tvPreviewTextVisionResult.asFlow()
+            .debounce(DEBOUNCE_MILLIS)
+            .filterNotNull()
+            .map {
+                it.toString()
+            }
+
+        val latFlow = tvLocationLatitude.asFlow()
+            .debounce(DEBOUNCE_MILLIS)
+            .filterNotNull()
+            .map {
+                it.toString().replace(",", ".").toDouble()
+            }
+
+        val longFlow = tvLocationLongitude.asFlow()
+            .debounce(DEBOUNCE_MILLIS)
+            .filterNotNull()
+            .map {
+                it.toString().replace(",", ".").toDouble()
+            }
+
+        val distanceFlow = tvDistanceValue.asFlow()
+            .debounce(DEBOUNCE_MILLIS)
+            .filterNotNull()
+            .map {
+                it.toString()
+            }
+
+        val timeFlow = tvEstimatedTimeValue.asFlow()
+            .debounce(DEBOUNCE_MILLIS)
+            .filterNotNull()
+            .map {
+                it.toString()
+            }
+
+        combine(textFlow, latFlow, longFlow, distanceFlow, timeFlow) { text, lat, long, distance, time ->
+            ImageAttributesUiModel(
+                text = text,
+                lat = lat,
+                long = long,
+                distance = distance,
+                time = time
+            )
+        }.collectLatest {
+            viewModel.updateData(it)
+            binding.btnUpdateData.isEnabled = true
         }
     }
 
@@ -133,6 +195,10 @@ class PreviewFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        private const val DEBOUNCE_MILLIS = 100L
     }
 
 

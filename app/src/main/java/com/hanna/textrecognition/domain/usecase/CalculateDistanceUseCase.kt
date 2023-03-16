@@ -25,6 +25,6 @@ class CalculateDistanceUseCase @Inject constructor(
             if (uiModel != null) return Either.success(uiModel)
         }
 
-        return Either.fail(Failure.UnknownError)
+        return Either.fail(Failure.UnknownFailure)
     }
 }
