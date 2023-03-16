@@ -19,6 +19,7 @@ class UpdateDataUseCase @Inject constructor(
         val longitude: Double,
         val duration: String,
         val distance: String,
+        val imagePath: String
     )
 
     override suspend fun run(params: Params): Either<Failure, Boolean> {
@@ -28,7 +29,8 @@ class UpdateDataUseCase @Inject constructor(
             latitude = params.latitude.toString(),
             longitude = params.longitude.toString(),
             duration = params.duration,
-            distance = params.distance
+            distance = params.distance,
+            imagePath = params.imagePath
         )
         val result = repository.updateData(updateDataRequest)
         return if (result.isSuccess && result.getOrDefault(false)) {

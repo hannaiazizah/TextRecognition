@@ -59,7 +59,7 @@ class PreviewFragment : Fragment() {
             viewModel.clearData()
             findNavController().navigateUp()
         }
-        binding.btnTryAgain.setOnClickListener {
+        binding.btnUpdateData.setOnClickListener {
             viewModel.postUpdateData()
         }
     }

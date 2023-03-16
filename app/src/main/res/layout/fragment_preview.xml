@@ -111,7 +111,7 @@
             android:textColor="@color/black"
             android:textSize="12sp" />
 
-        <androidx.appcompat.widget.AppCompatButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnTryAgain"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -119,7 +119,7 @@
             android:layout_marginTop="32dp"
             android:text="@string/button_capture_another" />
 
-        <androidx.appcompat.widget.AppCompatButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnUpdateData"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

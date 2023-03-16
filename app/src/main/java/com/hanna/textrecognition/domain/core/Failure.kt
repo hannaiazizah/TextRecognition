@@ -7,9 +7,6 @@ package com.hanna.textrecognition.domain.core
 sealed class Failure {
     object DataFormatFailure : Failure()
     object UnknownFailure: Failure()
-    object RecognitionFailure: Failure()
-    object PermissionFailure: Failure()
-    object LocationFailure: Failure()
     class ServerFailure(val exception: Throwable) : Failure()
     object Empty : Failure()
 }

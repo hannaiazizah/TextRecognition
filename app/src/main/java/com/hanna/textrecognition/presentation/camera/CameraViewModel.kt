@@ -155,15 +155,17 @@ class CameraViewModel @Inject constructor(
     fun postUpdateData() {
         imageAttributesUiModel ?: return
         viewModelScope.launch {
-            val dataPath =
-                (uploadResult.value as? Either.Success)?.value?.referenceId ?: return@launch
+            val uploadResult = (uploadResult.value as? Either.Success)?.value ?: return@launch
+            val dataPath = uploadResult.referenceId
+            val imagePath = uploadResult.imageUrl
             val params = UpdateDataUseCase.Params(
                 dataPath = dataPath,
                 imageText = imageAttributesUiModel!!.text,
                 latitude = imageAttributesUiModel!!.lat,
                 longitude = imageAttributesUiModel!!.long,
                 distance = imageAttributesUiModel!!.distance,
-                duration = imageAttributesUiModel!!.time
+                duration = imageAttributesUiModel!!.time,
+                imagePath = imagePath
             )
             val result = updateDataUseCase.run(params)
             _updateResult.emit(result)

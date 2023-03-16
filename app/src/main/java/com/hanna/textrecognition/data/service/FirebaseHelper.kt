@@ -27,7 +27,6 @@ class FirebaseHelper @Inject constructor() {
     }
 
     suspend fun addNewData(imageRequest: ImageRequest): Result<String?> {
-        var result: Result<String?> = Result.success(null)
         val database = Firebase.database
         val currentMillis = System.currentTimeMillis()
         val randomUuid = UUID.randomUUID().toString()
@@ -35,27 +34,28 @@ class FirebaseHelper @Inject constructor() {
         val myRef = database.getReference("captures")
 
         val hashMap: HashMap<String, String> = hashMapOf()
-        hashMap["imageUrl"] = imageRequest.imageUrl ?: ""
+        hashMap["imagePath"] = imageRequest.imageUrl ?: ""
         hashMap["imageText"] = imageRequest.imageText ?: ""
         hashMap["latitude"] = imageRequest.latitude ?: ""
         hashMap["longitude"] = imageRequest.longitude ?: ""
         hashMap["duration"] = imageRequest.duration ?: ""
         hashMap["distance"] = imageRequest.distance ?: ""
 
-        myRef.child(pathString).setValue(hashMap)
-            .addOnSuccessListener {
-                result = Result.success(pathString)
+        return try {
+            myRef.child(pathString).setValue(hashMap).await()
+            val data = myRef.child(pathString).get().await()
+            if (data.exists()) {
+                Result.success(pathString)
+            } else {
+                Result.failure(Throwable("empty failure"))
             }
-            .addOnFailureListener {
-                result = Result.failure(it)
-            }
-            .await()
-
-        return result
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun updateData(request: UpdateDataRequest): Result<Boolean> {
-        var result: Result<Boolean> = Result.success(false)
+        if (request.dataPath.isEmpty()) return Result.failure(Throwable("data path not found"))
         val database = Firebase.database
         val myRef = database.getReference("captures")
         val hashMap: HashMap<String, String> = hashMapOf()
@@ -64,17 +64,19 @@ class FirebaseHelper @Inject constructor() {
         hashMap["longitude"] = request.longitude
         hashMap["duration"] = request.duration
         hashMap["distance"] = request.distance
+        hashMap["imagePath"] = request.imagePath
 
-        myRef.child(request.dataPath).setValue(hashMap)
-            .addOnSuccessListener {
-                result = Result.success(true)
+        return try {
+            myRef.child(request.dataPath).setValue(hashMap).await()
+            val data = myRef.child(request.dataPath).get().await()
+            if (data.exists()) {
+                Result.success(true)
+            } else {
+                Result.failure(Throwable("empty failure"))
             }
-            .addOnFailureListener {
-                result = Result.failure(it)
-            }
-            .await()
-
-        return result
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
 }

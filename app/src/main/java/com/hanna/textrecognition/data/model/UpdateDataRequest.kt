@@ -7,4 +7,5 @@ data class UpdateDataRequest(
     val distance: String,
     val duration: String,
     val dataPath: String,
+    val imagePath: String
 )
